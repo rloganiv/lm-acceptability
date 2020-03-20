@@ -10,7 +10,7 @@ setup(
     keywords='allennlp language model',
     packages=find_packages(exclude=['tests']),
     install_requires = [
-        'allennlp @ git+ssh://git@github.com/allenai/allennlp@v1.0-prerelease'
+        'allennlp @ git+https://git@github.com/allenai/allennlp@v1.0-prerelease'
     ],
     tests_requre=['pytest'],
     python_requires='>=3.7.0'
