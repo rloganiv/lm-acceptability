@@ -43,14 +43,14 @@ class PrefixLm(Model):
         self,
         tokens: TextFieldTensors,
         eval_mask: torch.BoolTensor,
-        metadata: List[Dict[str, Any]],
+        metadata: Dict[str, Any],
     ) -> Dict[str, torch.Tensor]:
         # A little hacky
         input_ = self._adapt_tokens(tokens)
         logits, *_ = self.model(**input_)
         token_ids = util.get_token_ids_from_text_field_tensors(tokens)
         log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
-        token_log_likelihood = log_probs[:,:-1].gather(-1, token_ids[:,1:].unsqueeze(-1)).squeeze()
+        token_log_likelihood = log_probs[:,:-1].gather(-1, token_ids[:,1:].unsqueeze(-1)).squeeze(-1)
         suffix_log_likelihood = (eval_mask[:,1:] * token_log_likelihood).sum(-1)
 
         output_dict = {
@@ -77,8 +77,10 @@ class PrefixLm(Model):
             suffix_log_likelihood = _log_likelihood.masked_select(_mask[1:])
             suffix_log_likelihoods.append(suffix_log_likelihood.tolist())
 
-        readable = {
-            'suffix': output_dict['metadata']['suffix'],
+        suffixes = [x['suffix'] for x in output_dict['metadata']]
+
+        return {
+            'suffix': suffixes,
             'suffix_log_likelihood': output_dict['suffix_log_likelihood'],
             'token_log_likehihood': suffix_log_likelihoods
         }
