@@ -5,7 +5,8 @@ local model_name='transfo-xl-wt103';
         "type": "prefix_lm",
         "tokenizer": {
             "type": "pretrained_transformer",
-            "model_name": model_name
+            "model_name": model_name,
+            "add_special_tokens": false
         },
         "token_indexers": {
             "tokens": {
