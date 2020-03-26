@@ -3,13 +3,10 @@ from typing import Any, Dict, List
 from allennlp.common.checks import check_dimensions_match
 from allennlp.data import TextFieldTensors, Vocabulary
 from allennlp.models import Model
-from allennlp.modules import Seq2SeqEncoder, TextFieldEmbedder
 from allennlp.nn import util
 from overrides import overrides
 import torch
 from transformers import AutoModelWithLMHead
-
-from acceptability.modules.language_model_head import LanguageModelHead
 
 
 @Model.register("prefix_lm")
