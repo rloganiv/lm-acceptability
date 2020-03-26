@@ -1,2 +1,2 @@
-from acceptability.predictors.prefix_lm import PrefixLmPredictor
-from acceptability.predictors.suffix_lm import SuffixLmPredictor
+from acceptability.predictors.prefix import PrefixPredictor
+from acceptability.predictors.suffix import SuffixPredictor

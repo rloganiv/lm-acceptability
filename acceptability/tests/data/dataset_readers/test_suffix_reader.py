@@ -4,10 +4,10 @@ from allennlp.data.tokenizers import PretrainedTransformerTokenizer
 from allennlp.data.token_indexers import PretrainedTransformerIndexer
 from allennlp.data.vocabulary import Vocabulary
 
-from acceptability.data.dataset_readers import SuffixLmReader
+from acceptability.data.dataset_readers import SuffixReader
 
 
-class TestSuffixLmReader(TestCase):
+class TestSuffixReader(TestCase):
     def test_vanilla_text_to_instance(self):
         vocab = Vocabulary()
         vocab.add_tokens_to_namespace(
@@ -21,7 +21,7 @@ class TestSuffixLmReader(TestCase):
             ],
             namespace='tokens'
         )
-        reader = SuffixLmReader()
+        reader = SuffixReader()
         instance = reader.text_to_instance(
             prefix='This is',
             suffix_a='a difficult test',
@@ -67,7 +67,7 @@ class TestSuffixLmReader(TestCase):
         token_indexers={
             'tokens': PretrainedTransformerIndexer(model_name='gpt2')
         }
-        reader = SuffixLmReader(
+        reader = SuffixReader(
             tokenizer=tokenizer,
             token_indexers=token_indexers
         )

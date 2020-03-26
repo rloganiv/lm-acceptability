@@ -8,8 +8,8 @@ from allennlp.data.fields import TextField
 from allennlp.predictors import Predictor
 
 
-@Predictor.register('prefix_lm')
-class PrefixLmPredictor(Predictor):
+@Predictor.register('prefix')
+class PrefixPredictor(Predictor):
     def predict(
         self,
         prefix_a: str,

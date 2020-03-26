@@ -1,2 +1,2 @@
-from acceptability.data.dataset_readers.prefix_lm import PrefixLmReader
-from acceptability.data.dataset_readers.suffix_lm import SuffixLmReader
+from acceptability.data.dataset_readers.prefix import PrefixReader
+from acceptability.data.dataset_readers.suffix import SuffixReader

@@ -14,8 +14,8 @@ from overrides import overrides
 logger = logging.getLogger(__name__)
 
 
-@DatasetReader.register("suffix_lm")
-class SuffixLmReader(DatasetReader):
+@DatasetReader.register("prefix")
+class PrefixReader(DatasetReader):
     def __init__(
         self,
         tokenizer: Tokenizer = None,
@@ -35,34 +35,34 @@ class SuffixLmReader(DatasetReader):
             for line in f:
                 data = json.loads(line)
                 yield self.text_to_instance(
-                    prefix=data['prefix'],
-                    suffix_a=data['suffix_a'],
-                    suffix_b=data['suffix_b']
+                    prefix_a=data['prefix_a'],
+                    prefix_b=data['prefix_b'],
+                    suffix=data['suffix']
                 )
 
     @overrides
     def text_to_instance(
         self,
-        prefix: str,
-        suffix_a: str,
-        suffix_b: str,
+        prefix_a: str,
+        prefix_b: str,
+        suffix: str,
     ) -> Instance:
 
         # HuggingFace's tokenizers require leading whitespace.
-        prefix_tokens = self._tokenizer.tokenize(' ' + prefix)
-        suffix_a_tokens = self._tokenizer.tokenize(' ' + suffix_a)
-        suffix_b_tokens = self._tokenizer.tokenize(' ' + suffix_b)
+        prefix_a_tokens = self._tokenizer.tokenize(' ' + prefix_a)
+        prefix_b_tokens = self._tokenizer.tokenize(' ' + prefix_b)
+        suffix_tokens = self._tokenizer.tokenize(' ' + suffix)
 
-        tokens_a = prefix_tokens + suffix_a_tokens
-        tokens_b = prefix_tokens + suffix_b_tokens
+        tokens_a = prefix_a_tokens + suffix_tokens
+        tokens_b = prefix_b_tokens + suffix_tokens
 
-        eval_mask_a = np.array([0] * len(prefix_tokens) + [1] * len(suffix_a_tokens))
-        eval_mask_b = np.array([0] * len(prefix_tokens) + [1] * len(suffix_b_tokens))
+        eval_mask_a = np.array([0] * len(prefix_a_tokens) + [1] * len(suffix_tokens))
+        eval_mask_b = np.array([0] * len(prefix_b_tokens) + [1] * len(suffix_tokens))
 
         metadata = {
-            'prefix': [t.text for t in prefix_tokens],
-            'suffix_a': [t.text for t in suffix_a_tokens],
-            'suffix_b': [t.text for t in suffix_b_tokens],
+            'prefix_a': [t.text for t in prefix_a_tokens],
+            'prefix_b': [t.text for t in prefix_b_tokens],
+            'suffix': [t.text for t in suffix_tokens],
         }
 
         fields = {
