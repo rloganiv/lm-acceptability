@@ -8,8 +8,6 @@ from overrides import overrides
 import torch
 from transformers import AutoModelWithLMHead
 
-from acceptability.common.util import adapt_for_transformer
-
 
 @Model.register("pretrained_transformer_lm")
 class PretrainedTransformerLm(Model):
