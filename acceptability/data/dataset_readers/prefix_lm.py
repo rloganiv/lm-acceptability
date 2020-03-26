@@ -42,21 +42,34 @@ class PrefixLmReader(DatasetReader):
     @overrides
     def text_to_instance(
         self,
-        prefix: str,
+        prefix_a: str,
+        prefix_b: str,
         suffix: str,
     ) -> Instance:
+
         # HuggingFace's tokenizers require leading whitespace.
-        prefix_tokens = self._tokenizer.tokenize(' ' + prefix)
+        prefix_a_tokens = self._tokenizer.tokenize(' ' + prefix_a)
+        prefix_b_tokens = self._tokenizer.tokenize(' ' + prefix_b)
         suffix_tokens = self._tokenizer.tokenize(' ' + suffix)
-        tokens = prefix_tokens + suffix_tokens
-        eval_mask = np.array([0] * len(prefix_tokens) + [1] * len(suffix_tokens))
+
+        tokens_a = prefix_a_tokens + suffix_tokens
+        tokens_b = prefix_b_tokens + suffix_tokens
+
+        eval_mask_a = np.array([0] * len(prefix_a_tokens) + [1] * len(suffix_tokens))
+        eval_mask_b = np.array([0] * len(prefix_b_tokens) + [1] * len(suffix_tokens))
+
         metadata = {
-            'prefix': [t.text for t in prefix_tokens],
+            'prefix_a': [t.text for t in prefix_a_tokens],
+            'prefix_b': [t.text for t in prefix_b_tokens],
             'suffix': [t.text for t in suffix_tokens],
         }
+
         fields = {
-            'tokens': TextField(tokens, token_indexers=self._token_indexers),
-            'eval_mask': ArrayField(eval_mask, dtype=bool),
+            'tokens_a': TextField(tokens_a, token_indexers=self._token_indexers),
+            'tokens_b': TextField(tokens_a, token_indexers=self._token_indexers),
+            'eval_mask_a': ArrayField(eval_mask_a, dtype=bool),
+            'eval_mask_b': ArrayField(eval_mask_a, dtype=bool),
             'metadata': MetadataField(metadata),
         }
+
         return Instance(fields)
