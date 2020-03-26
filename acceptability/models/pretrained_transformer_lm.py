@@ -9,8 +9,8 @@ import torch
 from transformers import AutoModelWithLMHead
 
 
-@Model.register("prefix_lm")
-class PrefixLm(Model):
+@Model.register("pretrained_transformer_lm")
+class PretrainedTransformerLm(Model):
     def __init__(
         self,
         vocab: Vocabulary,
@@ -21,7 +21,7 @@ class PrefixLm(Model):
         self.model = AutoModelWithLMHead.from_pretrained(model_name)
 
     @staticmethod
-    def _adapt_tokens(tokens):
+    def _adapt_for_transformer(tokens):
         """
         Adapts tokens to input expected by transformers model.
         """
@@ -36,48 +36,34 @@ class PrefixLm(Model):
             parameters['token_type_ids'] = token_dict['type_ids']
         return parameters
 
-    def forward(
-        self,
-        tokens: TextFieldTensors,
-        eval_mask: torch.BoolTensor,
-        metadata: Dict[str, Any],
-    ) -> Dict[str, torch.Tensor]:
-        # A little hacky
-        input_ = self._adapt_tokens(tokens)
-        logits, *_ = self.model(**input_)
+    def _evaluate(self, tokens, eval_mask):
+        transformer_input = self._adapt_for_transformer(tokens)
+        logits, *_ = self.model(**transformer_input)
         token_ids = util.get_token_ids_from_text_field_tensors(tokens)
         log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
         token_log_likelihood = log_probs[:,:-1].gather(-1, token_ids[:,1:].unsqueeze(-1)).squeeze(-1)
         suffix_log_likelihood = (eval_mask[:,1:] * token_log_likelihood).sum(-1)
+        return token_log_likelihood, suffix_log_likelihood
+
+    def forward(
+        self,
+        tokens_a: TextFieldTensors,
+        tokens_b: TextFieldTensors,
+        eval_mask_a: torch.BoolTensor,
+        eval_mask_b: torch.BoolTensor,
+        metadata: Dict[str, Any],
+    ) -> Dict[str, torch.Tensor]:
+        token_log_likelihood_a, suffix_log_likelihood_a = self._evaluate(tokens_a, eval_mask_a)
+        token_log_likelihood_b, suffix_log_likelihood_b = self._evaluate(tokens_b, eval_mask_b)
 
         output_dict = {
-            'token_ids': token_ids,
-            'eval_mask': eval_mask,
-            'token_log_likelihood': token_log_likelihood,
-            'suffix_log_likelihood': suffix_log_likelihood,
-            'loss': -suffix_log_likelihood.mean(),
+            'eval_mask_a': eval_mask_a,
+            'eval_mask_b': eval_mask_b,
+            'token_log_likelihood_a': token_log_likelihood_a,
+            'token_log_likelihood_b': token_log_likelihood_b,
+            'suffix_log_likelihood_a': suffix_log_likelihood_a,
+            'suffix_log_likelihood_b': suffix_log_likelihood_b,
             'metadata': metadata
         }
 
         return output_dict
-
-    @overrides
-    def make_output_human_readable(
-        self,
-        output_dict: Dict[str, torch.Tensor]
-    ) -> Dict[str, torch.Tensor]:
-
-        suffix_log_likelihoods = []
-        eval_mask = output_dict['eval_mask']
-        token_log_likelihood = output_dict['token_log_likelihood']
-        for _mask, _log_likelihood in zip(eval_mask, token_log_likelihood):
-            suffix_log_likelihood = _log_likelihood.masked_select(_mask[1:])
-            suffix_log_likelihoods.append(suffix_log_likelihood.tolist())
-
-        suffixes = [x['suffix'] for x in output_dict['metadata']]
-
-        return {
-            'suffix': suffixes,
-            'suffix_log_likelihood': output_dict['suffix_log_likelihood'],
-            'token_log_likehihood': suffix_log_likelihoods
-        }

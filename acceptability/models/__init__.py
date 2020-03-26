@@ -1,1 +1,1 @@
-from acceptability.models.prefix_lm import PrefixLm
+from acceptability.models.pretrained_transformer_lm import PretrainedTransformerLm
