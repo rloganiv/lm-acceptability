@@ -1,5 +1,4 @@
 language:  python
-cache: pip
 python:
   # We won't use travis python
   - 3.7
