@@ -35,7 +35,8 @@ class PrefixLmReader(DatasetReader):
             for line in f:
                 data = json.loads(line)
                 yield self.text_to_instance(
-                    prefix=data['prefix'],
+                    prefix_a=data['prefix_a'],
+                    prefix_b=data['prefix_b'],
                     suffix=data['suffix']
                 )
 
@@ -66,9 +67,9 @@ class PrefixLmReader(DatasetReader):
 
         fields = {
             'tokens_a': TextField(tokens_a, token_indexers=self._token_indexers),
-            'tokens_b': TextField(tokens_a, token_indexers=self._token_indexers),
+            'tokens_b': TextField(tokens_b, token_indexers=self._token_indexers),
             'eval_mask_a': ArrayField(eval_mask_a, dtype=bool),
-            'eval_mask_b': ArrayField(eval_mask_a, dtype=bool),
+            'eval_mask_b': ArrayField(eval_mask_b, dtype=bool),
             'metadata': MetadataField(metadata),
         }
 
