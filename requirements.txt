@@ -1,2 +1,2 @@
 git+https://github.com/allenai/allennlp.git
-transformers==2.5.1
+transformers==4.30.0

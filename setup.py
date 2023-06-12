@@ -11,7 +11,7 @@ setup(
     packages=find_packages(exclude=['tests']),
     install_requires = [
         'allennlp @ git+https://git@github.com/allenai/allennlp',
-        'transformers==2.5.1'
+        'transformers==4.30.0'
     ],
     tests_requre=['pytest'],
     python_requires='>=3.7.0'
